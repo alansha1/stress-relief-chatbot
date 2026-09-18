@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CalmSpace - Stress Relief Chat Companion</title>
+<link rel="stylesheet" href="style.css">
+<script src="vendor/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div>
+      <h1>CalmSpace</h1>
+      <div class="sub">a rule based stress relief companion</div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="breather-toggle">Take a breather</button>
+      <button class="icon-btn" id="dashboard-toggle">Dashboard</button>
+    </div>
+  </header>
+
+  <div id="disclaimer-banner">
+    Not a therapist or medical service. If you're in crisis, please contact a real crisis line or professional. Tap to expand.
+  </div>
+
+  <div class="meter-row">
+    <span id="trend-icon">▬</span>
+    <div class="meter-track"><div id="meter-fill" data-level="medium"></div></div>
+    <span id="meter-label">50 / 100</span>
+  </div>
+
+  <div id="chat-log"></div>
+
+  <form id="chat-form" autocomplete="off">
+    <input type="hidden" id="onboarding-flag" value="">
+    <input type="text" id="chat-input" placeholder="Type how you're feeling..." maxlength="400">
+    <button type="submit">Send</button>
+  </form>
+
+  <div class="rating-row">
+    <span>Rate this chat:</span>
+    <span class="star" data-value="1">&#9733;</span>
+    <span class="star" data-value="2">&#9733;</span>
+    <span class="star" data-value="3">&#9733;</span>
+    <span class="star" data-value="4">&#9733;</span>
+    <span class="star" data-value="5">&#9733;</span>
+    <span id="rating-thanks"></span>
+  </div>
+
+  <!-- animated companion -->
+  <div id="companion-wrap">
+    <div id="companion-bubble"></div>
+    <svg id="companion" viewBox="0 0 100 100" data-emotion="neutral">
+      <defs>
+        <linearGradient id="companion-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#8b5cf6"></stop>
+          <stop offset="100%" stop-color="#ff6fae"></stop>
+        </linearGradient>
+      </defs>
+      <circle cx="50" cy="55" r="38" fill="url(#companion-grad)"></circle>
+      <circle cx="50" cy="55" r="38" fill="none" stroke="#ffffff" stroke-opacity="0.25" stroke-width="2"></circle>
+      <!-- eyes -->
+      <circle cx="37" cy="50" r="5" fill="#1e1638"></circle>
+      <circle cx="63" cy="50" r="5" fill="#1e1638"></circle>
+      <circle cx="38.5" cy="48.5" r="1.4" fill="white"></circle>
+      <circle cx="64.5" cy="48.5" r="1.4" fill="white"></circle>
+      <!-- mouths, toggled via CSS on [data-emotion] -->
+      <path data-part="mouth-neutral" d="M40 68 Q50 72 60 68" stroke="#1e1638" stroke-width="3" fill="none" stroke-linecap="round"></path>
+      <path data-part="mouth-happy" d="M36 65 Q50 82 64 65" stroke="#1e1638" stroke-width="3" fill="none" stroke-linecap="round"></path>
+      <path data-part="mouth-laugh" d="M34 63 Q50 88 66 63 Q50 78 34 63 Z" fill="#1e1638"></path>
+      <path data-part="mouth-concerned" d="M40 72 Q50 64 60 72" stroke="#1e1638" stroke-width="3" fill="none" stroke-linecap="round"></path>
+      <path data-part="mouth-cry" d="M40 70 Q50 66 60 70" stroke="#1e1638" stroke-width="3" fill="none" stroke-linecap="round"></path>
+      <!-- little ears/antennae for personality -->
+      <circle cx="50" cy="14" r="4" fill="#ffe66d"></circle>
+      <line x1="50" y1="18" x2="50" y2="26" stroke="#ffe66d" stroke-width="2"></line>
+    </svg>
+  </div>
+
+  <!-- dashboard panel -->
+  <div class="panel" id="dashboard-panel">
+    <div class="panel-header">
+      <h2>Session Dashboard</h2>
+      <button class="close-btn" id="dashboard-close">&times;</button>
+    </div>
+    <div class="panel-body">
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="label">Current stress</div><div class="value" id="kpi-current">50</div></div>
+        <div class="kpi-card"><div class="label">Baseline</div><div class="value" id="kpi-baseline">-</div></div>
+        <div class="kpi-card"><div class="label">Session average</div><div class="value" id="kpi-avg">0</div></div>
+        <div class="kpi-card"><div class="label">Peak</div><div class="value" id="kpi-peak">0</div></div>
+        <div class="kpi-card"><div class="label">Messages sent</div><div class="value" id="kpi-messages">0</div></div>
+        <div class="kpi-card"><div class="label">Bubbles popped</div><div class="value" id="kpi-bubbles">0</div></div>
+      </div>
+      <div class="chart-card">
+        <h3>Stress level over time</h3>
+        <div class="chart-box"><canvas id="trend-chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Mood distribution</h3>
+        <div class="chart-box"><canvas id="mood-chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Chat rating</h3>
+        <div id="kpi-rating" style="font-size:20px;font-weight:700;">Not rated yet</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- breather panel -->
+  <div class="panel" id="breather-panel">
+    <div class="panel-header">
+      <h2>Take a breather</h2>
+      <button class="close-btn" id="breather-close">&times;</button>
+    </div>
+    <div class="panel-body">
+      <div class="breather-tabs">
+        <button class="tab-btn active" id="breathe-tab">Breathing</button>
+        <button class="tab-btn" id="game-tab">Bubble pop</button>
+        <button class="tab-btn" id="colorgame-tab">Color match</button>
+      </div>
+
+      <div id="breathe-panel-inner">
+        <div class="breath-circle" id="breath-circle"></div>
+        <div id="breath-text">Press start when ready</div>
+        <div class="breath-controls">
+          <button id="breath-start">Start</button>
+          <button id="breath-stop">Stop</button>
+        </div>
+      </div>
+
+      <div id="game-panel" class="hidden">
+        <div id="bubble-score">Bubbles popped: 0</div>
+        <div id="bubble-field"></div>
+        <div class="game-hint">Click the bubbles as they float up. Each pop nudges your stress meter down a little.</div>
+      </div>
+
+      <div id="colorgame-panel" class="hidden">
+        <div id="cg-prompt">Tap the <span id="cg-target-word">color</span>!</div>
+        <div id="cg-grid"></div>
+        <div id="cg-score">Score: 0</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="confetti-layer"></div>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>
